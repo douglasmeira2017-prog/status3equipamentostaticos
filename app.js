@@ -1,0 +1,22 @@
+const wa = 'https://wa.me/5515996668304';
+const message = text => wa + '?text=' + encodeURIComponent(text);
+document.querySelectorAll('[data-whatsapp]').forEach(a => { a.href = message('Olá! Gostaria de conhecer os produtos da Status III.'); a.target = '_blank'; a.rel = 'noopener noreferrer'; });
+const products = [
+ {name:'Uniforme tático',category:'Uniformes',images:[8,2,3],description:'Confira nas fotos os detalhes da camisa e da calça. Consulte os modelos, tamanhos e opções disponíveis.'},
+ {name:'Capa modular',category:'Acessórios',images:[1,4],description:'Veja os detalhes e a configuração da capa modular nas imagens. Consulte as opções disponíveis com a equipe.'},
+ {name:'Camisa cinza bandeirante',category:'Uniformes',images:[10],description:'Conheça a camisa cinza bandeirante apresentada na coleção. Consulte tamanhos e disponibilidade.'},
+ {name:'Insígnias para boina',category:'Acessórios',images:[5],description:'Detalhes que fazem parte da sua identidade. Confira as opções de insígnias apresentadas na imagem.'},
+ {name:'Gorro Polícia Militar',category:'Acessórios',images:[12],description:'Gorro preto com identificação bordada. Veja os detalhes na foto e consulte a disponibilidade.'},
+ {name:'Garrafas térmicas',category:'Térmicos',images:[9,14],description:'Modelos apresentados com gravação personalizada. Consulte as opções de arte, os valores e os prazos de personalização.'},
+ {name:'Caneca térmica 700 ml',category:'Térmicos',images:[13],description:'Caneca com alça e opção de gravação a laser, conforme a arte da coleção. Converse com a equipe sobre personalização.'}
+];
+const src = id => 'assets/produto-' + String(id).padStart(2,'0') + '.jpg';
+const grid = document.getElementById('products');
+function render(category='Todos'){
+ grid.innerHTML = products.map((p,i)=>({p,i})).filter(({p})=>category==='Todos'||p.category===category).map(({p,i})=>`<article class="product"><button class="product-image" data-product="${i}" aria-label="Ver fotos de ${p.name}"><img src="${src(p.images[0])}" alt="${p.name} — arte original da Status III" loading="lazy"><span class="zoom">Ver detalhes ↗</span></button><div class="product-top"><span>${p.category.toUpperCase()}</span><span>${String(i+1).padStart(2,'0')}</span></div><h3>${p.name}</h3><div class="product-bottom"><span>Consulte disponibilidade</span><a href="${message('Olá! Tenho interesse em: '+p.name+'. Poderia informar valores e disponibilidade?')}" target="_blank" rel="noopener noreferrer" aria-label="Consultar ${p.name} pelo WhatsApp">Tenho interesse ↗</a></div></article>`).join('');
+ grid.querySelectorAll('[data-product]').forEach(b=>b.addEventListener('click',()=>openProduct(Number(b.dataset.product))));
+}
+const dialog=document.getElementById('detail');
+function openProduct(i){const p=products[i];document.getElementById('detail-title').textContent=p.name;document.getElementById('detail-category').textContent=p.category.toUpperCase();document.getElementById('detail-description').textContent=p.description;document.getElementById('detail-wa').href=message('Olá! Tenho interesse em: '+p.name+'. Poderia informar valores e disponibilidade?');const large=document.getElementById('detail-image');large.src=src(p.images[0]);large.alt=p.name+' — foto 1';const thumbs=document.getElementById('thumbnails');thumbs.innerHTML=p.images.length>1?p.images.map((id,j)=>`<button class="${j===0?'selected':''}" aria-label="Ver foto ${j+1} de ${p.name}" aria-pressed="${j===0}"><img src="${src(id)}" alt=""></button>`).join(''):'';thumbs.querySelectorAll('button').forEach((b,j)=>b.addEventListener('click',()=>{large.src=src(p.images[j]);large.alt=p.name+' — foto '+(j+1);thumbs.querySelectorAll('button').forEach(t=>{t.classList.toggle('selected',t===b);t.setAttribute('aria-pressed',String(t===b))})}));dialog.showModal();document.body.style.overflow='hidden';}
+dialog.querySelector('.close').addEventListener('click',()=>dialog.close());dialog.addEventListener('close',()=>document.body.style.overflow='');dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
+document.querySelectorAll('[data-filter]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-filter]').forEach(t=>{t.classList.toggle('active',t===b);t.setAttribute('aria-pressed',String(t===b))});render(b.dataset.filter)}));render();
